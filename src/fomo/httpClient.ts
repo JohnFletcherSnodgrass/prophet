@@ -13,23 +13,30 @@ export interface HttpFomoClientConfig {
 }
 
 /**
- * Real Fomo integration — UNVERIFIED SCAFFOLD.
+ * Real Fomo integration — DEAD END, kept for reference only.
  *
- * This session's network access to fomo.family was blocked, so the actual
- * page/API structure has not been inspected yet. This client is written to
- * fail loudly and specifically rather than silently return wrong data:
+ * fomo.family isn't a server-rendered HTML site with embedded JSON (the
+ * assumption this file was written against) — it's a SPA calling a JSON API
+ * at prod-api.fomo.family. Worse: that API sits behind Cloudflare bot
+ * management. Scripted requests (curl, this client, a GitHub Actions runner)
+ * get rejected with `{"authorized": false}` even with a fresh, valid,
+ * unexpired bearer token — Cloudflare fingerprints the client as non-browser
+ * and blocks it before the token is checked at all. Confirmed by testing:
+ * the exact headers/cookies/token copied from a working logged-in browser
+ * request still fail when replayed from a script, and Cloudflare mints a
+ * brand new __cf_bm cookie on every attempt instead of accepting the one
+ * supplied — a clear bot-fingerprinting signature, not an auth problem.
  *
- *   1. It fetches the leaderboard/profile HTML.
- *   2. It tries generic embedded-JSON extraction (Next.js/Nuxt patterns).
- *   3. If that doesn't find recognizable trader/trade/thesis data, it throws
- *      with a message pointing at what to fix.
+ * Building something to spoof a browser fingerprint and get past that
+ * wasn't the right call — it's specifically the protection the site put up
+ * against this kind of automation. Instead, the real integration lives in
+ * ../../userscript/prophet.user.js: it runs *inside* your actual logged-in
+ * browser tab, so requests are indistinguishable from normal browsing
+ * (because they are normal browsing) and Cloudflare never flags them.
  *
- * TODO once fomo.family is reachable (widen network access, then re-run):
- *   - Confirm the leaderboard URL/endpoint that lists top traders.
- *   - Confirm whether trade history + thesis text are public on a profile
- *     page (e.g. https://fomo.family/profile/<handle>) or need auth.
- *   - Replace `parseTradersFromHtml` / `parseActivityFromHtml` below with
- *     real field mappings once the JSON shape (or a documented API) is known.
+ * This HTML-scraping client is left in place only in case fomo.family adds
+ * a server-rendered page some scheduled job could read without hitting the
+ * protected API.
  */
 export function createHttpFomoClient(config: HttpFomoClientConfig): FomoClient {
   const headers: Record<string, string> = {
