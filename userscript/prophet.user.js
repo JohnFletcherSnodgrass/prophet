@@ -5,7 +5,8 @@
 // @description  Watches traders you follow on Fomo and pushes a notification when their buys/sells add up to a promising coin.
 // @match        https://fomo.family/*
 // @run-at       document-idle
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @connect      exp.host
 // ==/UserScript==
 
 /**
@@ -224,6 +225,24 @@
     return false;
   }
 
+  function gmPost(url, body) {
+    // Uses GM_xmlhttpRequest (not page fetch) so this cross-origin call to
+    // exp.host isn't subject to the page's CORS policy — fomo.family never
+    // declared exp.host as an allowed cross-origin target, so a plain
+    // `fetch()` here would silently fail even though the request itself is
+    // fine. Requires @grant GM_xmlhttpRequest + @connect exp.host above.
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'POST',
+        url,
+        headers: { accept: 'application/json', 'content-type': 'application/json' },
+        data: JSON.stringify(body),
+        onload: (res) => resolve(res),
+        onerror: (err) => reject(err),
+      });
+    });
+  }
+
   async function sendExpoPush(coin) {
     if (CONFIG.expoPushTokens.length === 0) return;
     const messages = CONFIG.expoPushTokens.map((to) => ({
@@ -233,11 +252,10 @@
       data: { coinKey: coin.key, score: coin.score },
     }));
     try {
-      await fetch('https://exp.host/--/api/v2/push/send', {
-        method: 'POST',
-        headers: { accept: 'application/json', 'content-type': 'application/json' },
-        body: JSON.stringify(messages),
-      });
+      const res = await gmPost('https://exp.host/--/api/v2/push/send', messages);
+      if (res.status >= 400) {
+        warn('Expo push returned an error status', res.status, res.responseText);
+      }
     } catch (err) {
       warn('Expo push failed', err);
     }
