@@ -1,0 +1,30 @@
+{
+  "name": "prophet",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web --port 8083",
+    "poll": "tsx scripts/poll-and-notify.ts",
+    "test": "tsx --test \"src/**/__tests__/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "~57.0.15",
+    "expo-constants": "~18.0.9",
+    "expo-device": "~8.0.9",
+    "expo-notifications": "~0.32.13",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "~19.2.2",
+    "tsx": "^4.23.12",
+    "typescript": "~6.0.3"
+  }
+}

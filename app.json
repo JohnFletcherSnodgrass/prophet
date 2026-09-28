@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Prophet",
+    "slug": "prophet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.johnsnodgrass.prophet",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0C0B0A"
+      },
+      "package": "com.johnsnodgrass.prophet",
+      "permissions": ["NOTIFICATIONS"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0C0B0A"
+        }
+      ]
+    ],
+    "backgroundColor": "#0C0B0A"
+  }
+}

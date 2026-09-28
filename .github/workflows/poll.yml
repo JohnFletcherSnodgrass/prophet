@@ -1,0 +1,42 @@
+name: Poll Fomo and notify
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: poll-and-notify
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Run scoring pipeline and send notifications
+        env:
+          EXPO_PUSH_TOKEN: ${{ secrets.EXPO_PUSH_TOKEN }}
+          FOMO_BASE_URL: ${{ vars.FOMO_BASE_URL }}
+          FOMO_SESSION_COOKIE: ${{ secrets.FOMO_SESSION_COOKIE }}
+        run: npm run poll
+
+      - name: Commit updated state
+        run: |
+          if ! git diff --quiet -- data/state.json; then
+            git config user.name "prophet-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data/state.json
+            git commit -m "chore: update notification state [skip ci]"
+            git push
+          fi
